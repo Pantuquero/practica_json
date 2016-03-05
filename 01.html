@@ -9,7 +9,7 @@
                 var URL="http://www.zaragoza.es/api/recurso/turismo/monumento?rf=html&results_only=false&srsname=wgs84";
                 
                 $.getJSON(URL,function(data){
-                    datos = data;
+                    console.log(data);
                     
                     var desplegable = document.getElementById("desplegable");
                     
@@ -28,7 +28,7 @@
                             if(data.result[posicion].title == $("#desplegable").val()){
                                 $("#titulo").html(data.result[posicion].title);
                                 $("#imagen").empty().prepend($('<img>',{id:'theImg',src: data.result[posicion].image}));
-                                //No he conseguido extraer la posición del json, tampoco puedo consultar los datos del archivo porque poniendo la URL en el navegador me redirecciona a una página web del ayuntamiento de Zaragoza. He probado con position, posicion, localizacion, location, coordenadas, coordinates, coord, ubicacion, etc...
+                                posicionMonumento(data.result[posicion].geometry.coordinates[1], data.result[posicion].geometry.coordinates[0]);
                             }
                         }
                     });
