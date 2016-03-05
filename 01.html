@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>Monumentos</title>
+        <script src="jquery-1.8.2.min.js" type="text/javascript"></script>
+        <script>
+            $(document).ready(function(){
+                var URL="http://www.zaragoza.es/api/recurso/turismo/monumento?rf=html&results_only=false&srsname=wgs84";
+                
+                $.getJSON(URL,function(data){
+                    datos = data;
+                    
+                    var desplegable = document.getElementById("desplegable");
+                    
+                    //Cargo en el desplegable los monumentos del json
+                    for(posicion in data.result) {
+                        var option = document.createElement("option");
+                        option.text = data.result[posicion].title;
+                        desplegable.add(option);
+                    }
+                });
+                                
+                //Cuando seleccione en el desplegable aparecerá el monumento seleccionado
+                $("#desplegable").on("change", function(){
+                    $.getJSON(URL, function(data){
+                        for(posicion in data.result) {
+                            if(data.result[posicion].title == $("#desplegable").val()){
+                                $("#titulo").html(data.result[posicion].title);
+                                $("#imagen").empty().prepend($('<img>',{id:'theImg',src: data.result[posicion].image}));
+                                //No he conseguido extraer la posición del json, tampoco puedo consultar los datos del archivo porque poniendo la URL en el navegador me redirecciona a una página web del ayuntamiento de Zaragoza. He probado con position, posicion, localizacion, location, coordenadas, coordinates, coord, ubicacion, etc...
+                            }
+                        }
+                    });
+                });
+                
+                //Muestra el posicionamiento del monumento seleccionado pasándole las coordenadas por parámetro
+                function posicionMonumento(latitud, longitud) {
+                    var urlmapa = "http://maps.googleapis.com/maps/api/staticmap?center=" +
+                            latitud + "," +
+                            longitud +
+                            "&markers=color:red%7Clabel:aquí%7C" +
+                            latitud + "," +
+                            longitud +
+                            "&zoom=14&size=400x300&sensor=false";
+                    var mapa = document.getElementById('mapa');
+                    mapa.innerHTML = '<img src="' + urlmapa + '">';
+                }
+
+                //Método que busca un nombre completo de monumento especificado en el archivo json
+                $("#buscarCompleto").on("click", function(){
+                    $.getJSON(URL, function(data){
+                        for(posicion in data.result) {
+                            if(data.result[posicion].title == $("#nombreCompleto").val()){
+                                $("#titulo").html(data.result[posicion].title);
+                                $("#imagen").empty().prepend($('<img>',{id:'theImg',src: data.result[posicion].image}));
+                                return;
+                            }
+                        }
+                        alert("No se ha encontrado ningún monumento con ese nombre");
+                    });
+                });
+                
+                //Método que busca parte del nombre especificado en el archivo json
+                $("#buscarParte").on("click", function(){
+                    $.getJSON(URL, function(data){
+                        var textoBusqueda = $("#parteNombre").val().toLocaleLowerCase();
+                        
+                        for(posicion in data.result) {
+                            var monumento = data.result[posicion].title.toLocaleLowerCase();
+                            
+                            if(monumento.indexOf(textoBusqueda) != -1){
+                                $("#titulo").html(data.result[posicion].title);
+                                $("#imagen").empty().prepend($('<img>',{id:'theImg',src: data.result[posicion].image}));
+                                return;
+                            }
+                        }
+                        alert("No se ha encontrado ningún monumento con ese nombre");
+                    });
+                });
+            });
+        </script>
+    </head>
+    <body>
+        <fieldset>
+            <legend>Buscador</legend>
+            Buscar nombre completo: <input type="text" id="nombreCompleto"/><input type="button" id="buscarCompleto" value="Buscar"/><br/>
+            <br/>
+            Buscar parte del nombre: <input type="text" id="parteNombre"/><input type="button" id="buscarParte" value="Buscar"/><br/>
+            <br/>
+            <select id="desplegable"></select>
+        </fieldset>
+        
+        <h2><div id="titulo"></div></h2>
+        <div id="imagen"></div>
+        <div id="mapa"></div>
+    </body>
+</html>
